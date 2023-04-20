@@ -19,10 +19,15 @@
     <arg name="checkTerrainConn" value="$(arg checkTerrainConn)"/>
   </include>
 
+  <node pkg= "robot_base" type="robot_base_node" name="robot_base" />
+
+   <node pkg= "robot_detection" type="robot_detection_node" name="robot_detection" />
+
   <include file="$(find sensor_scan_generation)/launch/sensor_scan_generation.launch" />
 
   <include file="$(find loam_interface)/launch/loam_interface.launch" />
 
-  <node launch-prefix="nice" pkg="rviz" type="rviz" name="rvizGA" args="-d $(find vehicle_simulator)/rviz/vehicle_simulator.rviz" respawn="true"/>
+  <node launch-prefix="nice" pkg="rviz" type="rviz" name="rvizGA" args="-d $(find vehicle_simulator)/rviz/vehicle_simulator.rviz"/>
 
+  
 </launch>

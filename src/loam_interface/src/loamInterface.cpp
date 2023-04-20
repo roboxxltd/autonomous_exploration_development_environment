@@ -63,14 +63,14 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr& odom)
   }
 
   // publish odometry messages
-  odomData.header.frame_id = "/map";
-  odomData.child_frame_id = "/sensor";
+  odomData.header.frame_id = "map";
+  odomData.child_frame_id = "sensor";
   pubOdometryPointer->publish(odomData);
 
   // publish tf messages
   odomTrans.stamp_ = odom->header.stamp;
-  odomTrans.frame_id_ = "/map";
-  odomTrans.child_frame_id_ = "/sensor";
+  odomTrans.frame_id_ = "map";
+  odomTrans.child_frame_id_ = "sensor";
   odomTrans.setRotation(tf::Quaternion(geoQuat.x, geoQuat.y, geoQuat.z, geoQuat.w));
   odomTrans.setOrigin(tf::Vector3(odomData.pose.pose.position.x, odomData.pose.pose.position.y, odomData.pose.pose.position.z));
 
@@ -78,7 +78,7 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr& odom)
     if (!reverseTF) {
       tfBroadcasterPointer->sendTransform(odomTrans);
     } else {
-      tfBroadcasterPointer->sendTransform(tf::StampedTransform(odomTrans.inverse(), odom->header.stamp, "/sensor", "/map"));
+      tfBroadcasterPointer->sendTransform(tf::StampedTransform(odomTrans.inverse(), odom->header.stamp, "sensor", "map"));
     }
   }
 }
@@ -91,10 +91,10 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudIn)
   if (flipRegisteredScan) {
     int laserCloudSize = laserCloud->points.size();
     for (int i = 0; i < laserCloudSize; i++) {
-      float temp = laserCloud->points[i].x;
-      laserCloud->points[i].x = laserCloud->points[i].z;
-      laserCloud->points[i].z = laserCloud->points[i].y;
-      laserCloud->points[i].y = temp;
+        float temp = laserCloud->points[i].x;
+        laserCloud->points[i].x = laserCloud->points[i].z;
+        laserCloud->points[i].z = laserCloud->points[i].y;
+        laserCloud->points[i].y = temp;
     }
   }
 
@@ -102,7 +102,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudIn)
   sensor_msgs::PointCloud2 laserCloud2;
   pcl::toROSMsg(*laserCloud, laserCloud2);
   laserCloud2.header.stamp = laserCloudIn->header.stamp;
-  laserCloud2.header.frame_id = "/map";
+  laserCloud2.header.frame_id = "map";
   pubLaserCloudPointer->publish(laserCloud2);
 }
 
@@ -119,17 +119,17 @@ int main(int argc, char** argv)
   nhPrivate.getParam("sendTF", sendTF);
   nhPrivate.getParam("reverseTF", reverseTF);
 
-  ros::Subscriber subOdometry = nh.subscribe<nav_msgs::Odometry> (stateEstimationTopic, 5, odometryHandler);
+  ros::Subscriber subOdometry = nh.subscribe<nav_msgs::Odometry> (stateEstimationTopic, 1, odometryHandler);
 
-  ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2> (registeredScanTopic, 5, laserCloudHandler);
+  ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2> (registeredScanTopic, 1, laserCloudHandler);
 
-  ros::Publisher pubOdometry = nh.advertise<nav_msgs::Odometry> ("/state_estimation", 5);
+  ros::Publisher pubOdometry = nh.advertise<nav_msgs::Odometry> ("/state_estimation", 1);
   pubOdometryPointer = &pubOdometry;
 
   tf::TransformBroadcaster tfBroadcaster;
   tfBroadcasterPointer = &tfBroadcaster;
 
-  ros::Publisher pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2> ("/registered_scan", 5);
+  ros::Publisher pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2> ("/registered_scan", 1);
   pubLaserCloudPointer = &pubLaserCloud;
 
   ros::spin();
